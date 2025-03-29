@@ -3,33 +3,48 @@ import axios from "axios";
 import { Container, Form, Button, Alert } from "react-bootstrap";
 
 const CreateItem = ({ fetchItems }) => {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [price, setPrice] = useState("");
-  const [message, setMessage] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    category: "",
+    quantity: "",
+    price: ""
+  });
+  const [message, setMessage] = useState({ text: "", variant: "info" });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-
-    const newItem = { name, category, quantity, price };
+    setMessage({ text: "", variant: "info" });
 
     try {
-      const response = await axios.post("http://localhost:3000/items", newItem);
+      const response = await axios.post("http://localhost:3000/items", formData);
 
       if (response.status === 201) {
-        setMessage("Item added successfully!");
-        setName("");
-        setCategory("");
-        setQuantity("");
-        setPrice("");
-
+        setMessage({ 
+          text: "Item added successfully!", 
+          variant: "success" 
+        });
+        setFormData({
+          name: "",
+          category: "",
+          quantity: "",
+          price: ""
+        });
         fetchItems();
       }
     } catch (error) {
       console.error("Error adding item:", error);
-      setMessage(`Error: ${error.response?.data?.error || error.message}`);
+      setMessage({ 
+        text: `Error: ${error.response?.data?.error || error.message}`,
+        variant: "danger"
+      });
     }
   };
 
@@ -37,50 +52,67 @@ const CreateItem = ({ fetchItems }) => {
     <Container className="mt-4">
       <h2 className="mb-3">Create Item</h2>
 
-      {message && <Alert variant="info">{message}</Alert>}
+      {message.text && (
+        <Alert variant={message.variant}>{message.text}</Alert>
+      )}
 
       <Form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-3" controlId="formName">
           <Form.Label>Name</Form.Label>
           <Form.Control
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
             required
+            data-testid="name-input"
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-3" controlId="formCategory">
           <Form.Label>Category</Form.Label>
           <Form.Control
             type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
             required
+            data-testid="category-input"
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-3" controlId="formQuantity">
           <Form.Label>Quantity</Form.Label>
           <Form.Control
             type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            name="quantity"
+            value={formData.quantity}
+            onChange={handleChange}
             required
+            min="0"
+            data-testid="quantity-input"
           />
         </Form.Group>
 
-        <Form.Group className="mb-3">
+        <Form.Group className="mb-3" controlId="formPrice">
           <Form.Label>Price</Form.Label>
           <Form.Control
             type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
             required
+            min="0"
+            step="0.01"
+            data-testid="price-input"
           />
         </Form.Group>
 
-        <Button variant="primary" type="submit">
+        <Button 
+          variant="primary" 
+          type="submit"
+          data-testid="submit-button"
+        >
           Add Item
         </Button>
       </Form>
